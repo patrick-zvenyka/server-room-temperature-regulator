@@ -1,19 +1,22 @@
 import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Lock, User } from 'lucide-react';
+import { Layers } from 'lucide-react';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true);
         const success = await login(username, password);
+        setIsLoading(false);
         if (success) {
             navigate('/dashboard');
         } else {
@@ -22,66 +25,90 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-            {/* Background elements */}
-            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/20 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-secondary/20 rounded-full blur-3xl"></div>
-            
-            <div className="glass w-full max-w-md p-8 rounded-2xl z-10">
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-white mb-2">NetOne NOC</h1>
-                    <p className="text-slate-400">Secure Environment Monitoring</p>
+        <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#111827]">
+            {/* Logo and Headline */}
+            <div className="w-full max-w-md flex flex-col items-center mb-8">
+                <div className="text-indigo-500 mb-6">
+                    <Layers className="w-12 h-12" strokeWidth={2.5} />
                 </div>
+                <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+                    Sign in to your account
+                </h1>
+            </div>
+
+            {/* Login Card */}
+            <div className="w-full max-w-md bg-[#1f2937] p-8 md:p-10 rounded-xl border border-gray-800 shadow-xl">
 
                 {error && (
-                    <div className="bg-danger/20 border border-danger/50 text-danger-400 p-3 rounded-lg mb-6 text-sm text-center">
+                    <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-md mb-6 text-sm text-center">
                         {error}
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">Username</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <User className="h-5 w-5 text-slate-500" />
-                            </div>
-                            <input
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-white transition-all"
-                                placeholder="Admin"
-                                required
-                            />
-                        </div>
+                        <label className="block text-sm font-medium text-gray-200 mb-2">
+                            Username / Email address
+                        </label>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="w-full px-4 py-2.5 bg-[#374151] border border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-white placeholder-gray-400 transition-colors"
+                            placeholder=""
+                            required
+                        />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Lock className="h-5 w-5 text-slate-500" />
-                            </div>
+                        <label className="block text-sm font-medium text-gray-200 mb-2">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full px-4 py-2.5 bg-[#374151] border border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-white placeholder-gray-400 transition-colors"
+                            placeholder=""
+                            required
+                        />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
                             <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-white transition-all"
-                                placeholder="••••••••"
-                                required
+                                id="remember-me"
+                                name="remember-me"
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-gray-600 bg-[#374151] text-indigo-500 focus:ring-indigo-500 focus:ring-offset-gray-800"
                             />
+                            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
+                                Remember me
+                            </label>
+                        </div>
+
+                        <div className="text-sm">
+                            <a href="#" className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
+                                Forgot password?
+                            </a>
                         </div>
                     </div>
 
                     <button
                         type="submit"
-                        className="w-full py-3 px-4 bg-primary hover:bg-blue-600 text-white font-medium rounded-lg transition-colors shadow-lg shadow-primary/25"
+                        disabled={isLoading}
+                        className="w-full py-2.5 px-4 bg-indigo-500 hover:bg-indigo-600 text-white font-medium rounded-lg transition-colors shadow-lg shadow-indigo-500/25 flex justify-center items-center gap-2"
                     >
-                        Authenticate
+                        {isLoading ? (
+                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        ) : (
+                            "Sign in"
+                        )}
                     </button>
                 </form>
             </div>
+
+
         </div>
     );
 };
