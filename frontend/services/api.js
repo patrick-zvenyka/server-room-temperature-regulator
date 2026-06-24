@@ -35,12 +35,13 @@ api.interceptors.response.use(
         if (error.response) {
             const status = error.response.status;
             if (status === 401 || status === 403) {
-                // If we get a 403 Forbidden, it might be a role mismatch or expired session
-                const path = window.location.pathname;
-
-                if (path.startsWith('/sys-admin')) {
-                    // Optionally check if we should redirect
-                    console.warn("Administrative access denied. Checking session...");
+                // Token is invalid, expired, or access is forbidden
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('access');
+                
+                // Redirect to login if not already there
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
                 }
             }
         }
