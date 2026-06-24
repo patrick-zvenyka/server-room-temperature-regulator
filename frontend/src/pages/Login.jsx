@@ -1,11 +1,12 @@
 import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Layers } from 'lucide-react';
+import { Layers, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { login } = useContext(AuthContext);
@@ -48,7 +49,7 @@ const Login = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-200 mb-2">
-                            Username / Email address
+                            Username
                         </label>
                         <input
                             type="text"
@@ -64,29 +65,30 @@ const Login = () => {
                         <label className="block text-sm font-medium text-gray-200 mb-2">
                             Password
                         </label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-2.5 bg-[#374151] border border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-white placeholder-gray-400 transition-colors"
-                            placeholder=""
-                            required
-                        />
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full px-4 py-2.5 bg-[#374151] border border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-white placeholder-gray-400 transition-colors pr-12"
+                                placeholder=""
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300"
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="h-5 w-5" aria-hidden="true" />
+                                ) : (
+                                    <Eye className="h-5 w-5" aria-hidden="true" />
+                                )}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <input
-                                id="remember-me"
-                                name="remember-me"
-                                type="checkbox"
-                                className="h-4 w-4 rounded border-gray-600 bg-[#374151] text-indigo-500 focus:ring-indigo-500 focus:ring-offset-gray-800"
-                            />
-                            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
-                                Remember me
-                            </label>
-                        </div>
-
                         <div className="text-sm">
                             <a href="#" className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
                                 Forgot password?

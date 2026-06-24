@@ -9,6 +9,29 @@ class ServerRackSensorLogViewSet(viewsets.ModelViewSet):
     queryset = ServerRackSensorLog.objects.all()
     serializer_class = ServerRackSensorLogSerializer
 
+    def get_queryset(self):
+        from django.utils.dateparse import parse_datetime
+        from datetime import datetime, time
+        queryset = super().get_queryset()
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        if start_date:
+            try:
+                start = datetime.strptime(start_date, '%Y-%m-%d').date()
+                queryset = queryset.filter(timestamp__gte=datetime.combine(start, time.min))
+            except ValueError:
+                pass
+        
+        if end_date:
+            try:
+                end = datetime.strptime(end_date, '%Y-%m-%d').date()
+                queryset = queryset.filter(timestamp__lte=datetime.combine(end, time.max))
+            except ValueError:
+                pass
+                
+        return queryset
+
     def perform_create(self, serializer):
         """
         Save the sensor log and automatically check for threshold breaches.

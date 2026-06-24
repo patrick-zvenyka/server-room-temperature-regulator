@@ -4,8 +4,9 @@ import { AuthContext } from '../context/AuthContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { LogOut, Thermometer, Droplets, AlertTriangle, Server, Activity, ShieldCheck, Clock } from 'lucide-react';
 
+import AdminLayout from '../components/AdminLayout';
+
 const Dashboard = () => {
-    const { logout } = useContext(AuthContext);
     const [logs, setLogs] = useState([]);
     const [alerts, setAlerts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -46,32 +47,15 @@ const Dashboard = () => {
     const isTempCritical = currentTemp > 27 || currentTemp < 18;
 
     return (
-        <div className="min-h-screen bg-background text-slate-200 p-4 md:p-8 relative overflow-hidden">
-            {/* Ambient Background */}
-            <div className="absolute top-[-20%] left-[20%] w-[800px] h-[800px] bg-primary/5 rounded-full blur-[150px] pointer-events-none"></div>
-
-            <div className="max-w-7xl mx-auto relative z-10 animate-fade-in">
-                {/* Header */}
-                <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 glass p-5 md:px-8 rounded-3xl animate-slide-up">
-                    <div className="flex items-center gap-4 mb-4 md:mb-0">
-                        <div className="bg-gradient-to-br from-primary to-purple-600 p-3 rounded-2xl shadow-lg shadow-primary/20 animate-float">
-                            <Activity className="text-white w-6 h-6" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">NetOne <span className="text-primaryLight">NOC</span></h1>
-                            <p className="text-sm text-slate-400 font-medium mt-0.5 flex items-center gap-1.5">
-                                <ShieldCheck className="w-4 h-4 text-success" /> System Secure & Active
-                            </p>
-                        </div>
-                    </div>
-                    <button 
-                        onClick={logout}
-                        className="flex items-center gap-2 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700/50 px-5 py-2.5 rounded-xl transition-all border border-slate-700/50"
-                    >
-                        <LogOut className="w-4 h-4" />
-                        <span className="font-semibold text-sm">Sign Out</span>
-                    </button>
-                </header>
+        <AdminLayout>
+            <div className="animate-fade-in">
+                {/* Header Section */}
+                <div className="mb-8">
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2">System Overview</h1>
+                    <p className="text-sm text-slate-400 font-medium flex items-center gap-1.5">
+                        <ShieldCheck className="w-4 h-4 text-success" /> Telemetry Active & Secure
+                    </p>
+                </div>
 
                 {loading && logs.length === 0 ? (
                     <div className="flex flex-col justify-center items-center h-96 space-y-4">
@@ -219,7 +203,7 @@ const Dashboard = () => {
                     border-radius: 10px;
                 }
             `}</style>
-        </div>
+        </AdminLayout>
     );
 };
 
