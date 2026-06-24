@@ -27,7 +27,7 @@
 1. **Clone the repository**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/patrick-zvenyka/server-room-temperature-regulator.git
    cd server-room-temperature-regulator
    ```
 
