@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 
 export const AuthContext = createContext();
 
@@ -9,11 +9,9 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         if (token) {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             setIsAuthenticated(true);
             localStorage.setItem('access_token', token);
         } else {
-            delete axios.defaults.headers.common['Authorization'];
             setIsAuthenticated(false);
             localStorage.removeItem('access_token');
         }
@@ -21,7 +19,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (username, password) => {
         try {
-            const response = await axios.post('http://localhost:8000/api/token/', {
+            const response = await api.post('/token/', {
                 username,
                 password
             });

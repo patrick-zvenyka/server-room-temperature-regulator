@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import { AuthContext } from '../context/AuthContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { LogOut, Thermometer, Droplets, AlertTriangle, Server, Activity, ShieldCheck, Clock } from 'lucide-react';
@@ -13,8 +13,8 @@ const Dashboard = () => {
     const fetchData = async () => {
         try {
             const [logsRes, alertsRes] = await Promise.all([
-                axios.get('http://localhost:8000/api/monitoring/logs/'),
-                axios.get('http://localhost:8000/api/monitoring/alerts/')
+                api.get('/monitoring/logs/'),
+                api.get('/monitoring/alerts/')
             ]);
             
             const logsData = logsRes.data.results || logsRes.data;
