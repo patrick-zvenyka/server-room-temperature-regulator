@@ -1,11 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Activity, Users, Thermometer, List, LogOut, X } from 'lucide-react';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
     const location = useLocation();
     const { logout } = useContext(AuthContext);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
     const navItems = [
         { name: 'Dashboard', path: '/dashboard', icon: <Activity className="w-5 h-5" /> },
@@ -57,13 +59,48 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
             <div className="p-4 border-t border-gray-800">
                 <button 
-                    onClick={logout}
+                    onClick={() => setIsLogoutModalOpen(true)}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20"
                 >
                     <LogOut className="w-5 h-5" />
                     <span className="font-medium text-sm">Sign Out</span>
                 </button>
             </div>
+
+            {/* Logout Confirmation Modal */}
+            {isLogoutModalOpen && createPortal(
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-[#1f2937] border border-gray-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="bg-red-500/20 p-2 rounded-full">
+                                <LogOut className="w-6 h-6 text-red-500" />
+                            </div>
+                            <h3 className="text-xl font-bold text-white">Confirm Logout</h3>
+                        </div>
+                        <p className="text-gray-400 text-sm mb-6">
+                            Are you sure you want to securely end your session? You will need to log in again to access the dashboard.
+                        </p>
+                        <div className="flex gap-3">
+                            <button 
+                                onClick={() => setIsLogoutModalOpen(false)}
+                                className="flex-1 py-2.5 px-4 bg-gray-800 hover:bg-gray-700 text-white rounded-xl text-sm font-medium transition-colors border border-gray-700"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    setIsLogoutModalOpen(false);
+                                    logout();
+                                }}
+                                className="flex-1 py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-medium transition-colors"
+                            >
+                                Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
         </div>
     );
 };
