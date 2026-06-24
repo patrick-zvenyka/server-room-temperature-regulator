@@ -2,7 +2,7 @@
 
 **A comprehensive, enterprise-grade temperature monitoring and control system designed for server rooms and critical environments.**
 
-![System Screenshot](assets/screenshots/dashboard_light.png)
+![System Screenshot](files/dashboard.png)
 
 ## Features
 
