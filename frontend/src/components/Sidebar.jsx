@@ -1,9 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Activity, Users, Thermometer, List, LogOut } from 'lucide-react';
+import { Activity, Users, Thermometer, List, LogOut, X } from 'lucide-react';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, setIsOpen }) => {
     const location = useLocation();
     const { logout } = useContext(AuthContext);
 
@@ -15,13 +15,22 @@ const Sidebar = () => {
     ];
 
     return (
-        <div className="w-64 h-screen bg-[#1f2937] border-r border-gray-800 flex flex-col justify-between fixed top-0 left-0 z-50">
+        <div className={`w-64 h-screen bg-[#1f2937] border-r border-gray-800 flex flex-col justify-between fixed top-0 left-0 z-50 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
             <div>
-                <div className="p-6 flex items-center gap-3 border-b border-gray-800">
-                    <div className="bg-indigo-500 p-2 rounded-lg">
-                        <Activity className="text-white w-6 h-6" />
+                <div className="p-6 flex items-center justify-between border-b border-gray-800">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-indigo-500 p-2 rounded-lg">
+                            <Activity className="text-white w-6 h-6" />
+                        </div>
+                        <h1 className="text-xl font-bold text-white tracking-tight">NetOne <span className="text-indigo-400">NOC</span></h1>
                     </div>
-                    <h1 className="text-xl font-bold text-white tracking-tight">NetOne <span className="text-indigo-400">NOC</span></h1>
+                    {/* Mobile close button */}
+                    <button 
+                        className="lg:hidden p-2 text-gray-400 hover:text-white bg-gray-800 rounded-lg"
+                        onClick={() => setIsOpen(false)}
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
                 </div>
                 
                 <nav className="p-4 space-y-2 mt-4">
@@ -31,6 +40,7 @@ const Sidebar = () => {
                             <Link
                                 key={item.name}
                                 to={item.path}
+                                onClick={() => setIsOpen(false)}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                                     isActive 
                                         ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' 

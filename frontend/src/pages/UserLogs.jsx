@@ -7,18 +7,22 @@ const UserLogs = () => {
     const [logs, setLogs] = useState([]);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [username, setUsername] = useState('');
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
 
-    const fetchLogs = async () => {
+    const fetchLogs = async (currentPage = page) => {
         setLoading(true);
         try {
-            const params = {};
+            const params = { page: currentPage };
             if (startDate) params.start_date = startDate;
             if (endDate) params.end_date = endDate;
+            if (username) params.username = username;
             
             const response = await api.get('/users/activity/', { params });
-            const logsData = response.data.results || response.data;
-            setLogs(logsData);
+            setLogs(response.data.results);
+            setTotalPages(Math.ceil(response.data.count / 8));
         } catch (error) {
             console.error('Error fetching activity logs:', error);
         } finally {
@@ -27,12 +31,27 @@ const UserLogs = () => {
     };
 
     useEffect(() => {
-        fetchLogs();
+        fetchLogs(1);
     }, []);
 
     const handleFilter = (e) => {
         e.preventDefault();
-        fetchLogs();
+        setPage(1);
+        fetchLogs(1);
+    };
+
+    const handlePrevious = () => {
+        if (page > 1) {
+            setPage(page - 1);
+            fetchLogs(page - 1);
+        }
+    };
+
+    const handleNext = () => {
+        if (page < totalPages) {
+            setPage(page + 1);
+            fetchLogs(page + 1);
+        }
     };
 
     const getActionColor = (action) => {
@@ -56,6 +75,16 @@ const UserLogs = () => {
                 </div>
                 
                 <form onSubmit={handleFilter} className="flex flex-wrap items-end gap-3 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                    <div>
+                        <label className="block text-xs text-slate-400 mb-1">Username</label>
+                        <input 
+                            type="text" 
+                            placeholder="Search..."
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="w-32 bg-slate-700 border border-slate-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+                        />
+                    </div>
                     <div>
                         <label className="block text-xs text-slate-400 mb-1">Start Date</label>
                         <input 
@@ -116,6 +145,24 @@ const UserLogs = () => {
                             )}
                         </tbody>
                     </table>
+                </div>
+                {/* Pagination Controls */}
+                <div className="flex justify-between items-center p-4 bg-slate-800/80 border-t border-slate-700/50">
+                    <button 
+                        onClick={handlePrevious} 
+                        disabled={page === 1 || loading}
+                        className="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-lg text-sm transition-colors"
+                    >
+                        Previous
+                    </button>
+                    <span className="text-sm text-slate-400">Page {page} of {totalPages || 1}</span>
+                    <button 
+                        onClick={handleNext} 
+                        disabled={page >= totalPages || loading}
+                        className="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-lg text-sm transition-colors"
+                    >
+                        Next
+                    </button>
                 </div>
             </div>
         </AdminLayout>

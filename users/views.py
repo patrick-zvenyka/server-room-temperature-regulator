@@ -1,10 +1,22 @@
+# pyrefly: ignore [missing-import]
+# pyrefly: ignore [unused-import]
 from rest_framework import viewsets, mixins
+# pyrefly: ignore [missing-import]
+# pyrefly: ignore [unused-import]
 from rest_framework.permissions import IsAdminUser
 from django.contrib.auth.models import User
 from .models import UserActivityLog
 from .serializers import UserSerializer, UserActivityLogSerializer
 from django.utils.dateparse import parse_datetime
 from datetime import datetime, time
+# pyrefly: ignore [missing-import]
+# pyrefly: ignore [unused-import]
+from rest_framework.pagination import PageNumberPagination
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 8
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('-date_joined')
@@ -15,6 +27,7 @@ class UserActivityLogViewSet(viewsets.ModelViewSet):
     queryset = UserActivityLog.objects.all().select_related('user')
     serializer_class = UserActivityLogSerializer
     permission_classes = [IsAdminUser]
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -35,6 +48,10 @@ class UserActivityLogViewSet(viewsets.ModelViewSet):
             except ValueError:
                 pass
                 
+        username = self.request.query_params.get('username')
+        if username:
+            queryset = queryset.filter(user__username__icontains=username)
+            
         return queryset
 
     def perform_create(self, serializer):
