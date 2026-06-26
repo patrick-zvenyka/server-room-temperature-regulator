@@ -1,6 +1,14 @@
+# pyrefly: ignore [missing-import]
 from rest_framework import viewsets, mixins
+# pyrefly: ignore [missing-import]
+from rest_framework.views import APIView
+# pyrefly: ignore [missing-import]
+from rest_framework.response import Response
+# pyrefly: ignore [missing-import]
 from .models import ServerRackSensorLog, ThermalAlert
 from .serializers import ServerRackSensorLogSerializer, ThermalAlertSerializer
+# pyrefly: ignore [missing-import]
+from .evaluation import generate_performance_metrics
 
 class ServerRackSensorLogViewSet(viewsets.ModelViewSet):
     """
@@ -34,38 +42,9 @@ class ServerRackSensorLogViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """
-        Save the sensor log and automatically check for threshold breaches.
+        Save the sensor log. Alerts are automatically handled by the model's save() method.
         """
-        sensor_log = serializer.save()
-        
-        # Check against ASHRAE Standards for Server Rooms
-        # Temperature: 18°C - 27°C
-        if sensor_log.temperature_celsius > 27.0:
-            ThermalAlert.objects.create(
-                sensor_log=sensor_log,
-                alert_type='TEMPERATURE_HIGH',
-                message=f'Temperature of {sensor_log.temperature_celsius}°C exceeds the 27°C maximum threshold.'
-            )
-        elif sensor_log.temperature_celsius < 18.0:
-            ThermalAlert.objects.create(
-                sensor_log=sensor_log,
-                alert_type='TEMPERATURE_LOW',
-                message=f'Temperature of {sensor_log.temperature_celsius}°C is below the 18°C minimum threshold.'
-            )
-            
-        # Optional: Add humidity checks if needed (e.g., 40% - 60%)
-        if sensor_log.humidity_percentage > 60.0:
-            ThermalAlert.objects.create(
-                sensor_log=sensor_log,
-                alert_type='HUMIDITY_HIGH',
-                message=f'Humidity of {sensor_log.humidity_percentage}% exceeds the 60% maximum threshold.'
-            )
-        elif sensor_log.humidity_percentage < 40.0:
-            ThermalAlert.objects.create(
-                sensor_log=sensor_log,
-                alert_type='HUMIDITY_LOW',
-                message=f'Humidity of {sensor_log.humidity_percentage}% is below the 40% minimum threshold.'
-            )
+        serializer.save()
 
 
 class ThermalAlertViewSet(viewsets.ReadOnlyModelViewSet):
@@ -86,3 +65,11 @@ class ThermalAlertViewSet(viewsets.ReadOnlyModelViewSet):
             is_resolved = resolved_param.lower() in ['true', '1', 'yes']
             queryset = queryset.filter(resolved=is_resolved)
         return queryset
+
+class SystemEvaluationView(APIView):
+    """
+    API endpoint to retrieve the overall system performance evaluation metrics.
+    """
+    def get(self, request):
+        metrics = generate_performance_metrics()
+        return Response(metrics)
