@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import UserActivityLog
@@ -15,6 +16,15 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
+
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+        instance.is_superuser = validated_data.get('is_superuser', instance.is_superuser)
+        if 'password' in validated_data:
+            instance.set_password(validated_data['password'])
+        instance.save()
+        return instance
 
 class UserActivityLogSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)

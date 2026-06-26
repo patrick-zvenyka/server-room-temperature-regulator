@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import AdminLayout from '../components/AdminLayout';
-import { Users, UserPlus } from 'lucide-react';
+import { Users, UserPlus, Edit2, Trash2, X } from 'lucide-react';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
@@ -13,6 +13,7 @@ const UserManagement = () => {
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [editingUserId, setEditingUserId] = useState(null);
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -30,25 +31,66 @@ const UserManagement = () => {
         fetchUsers();
     }, []);
 
-    const handleCreateUser = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setSuccess('');
         try {
-            await api.post('/users/', {
-                username,
-                password,
-                email
-            });
-            setSuccess('Superuser created successfully.');
+            if (editingUserId) {
+                const data = { username, email };
+                if (password) data.password = password;
+                await api.patch(`/users/${editingUserId}/`, data);
+                setSuccess('User updated successfully.');
+            } else {
+                await api.post('/users/', {
+                    username,
+                    password,
+                    email
+                });
+                setSuccess('Superuser created successfully.');
+            }
             setUsername('');
             setPassword('');
             setEmail('');
+            setEditingUserId(null);
             fetchUsers();
         } catch (err) {
-            setError('Failed to create user. Ensure username is unique.');
+            setError(editingUserId ? 'Failed to update user.' : 'Failed to create user. Ensure username is unique.');
             console.error(err);
         }
+    };
+
+    const handleEditClick = (user) => {
+        setEditingUserId(user.id);
+        setUsername(user.username);
+        setEmail(user.email || '');
+        setPassword('');
+        setError('');
+        setSuccess('');
+    };
+
+    const handleDeleteUser = async (userId) => {
+        if (!window.confirm("Are you sure you want to delete this user?")) return;
+        try {
+            await api.delete(`/users/${userId}/`);
+            setSuccess('User deleted successfully.');
+            fetchUsers();
+            if (editingUserId === userId) {
+                cancelEdit();
+            }
+        } catch (err) {
+            setError('Failed to delete user.');
+            console.error(err);
+        }
+    };
+
+    const cancelEdit = () => {
+        setEditingUserId(null);
+        setUsername('');
+        setPassword('');
+        setEmail('');
+        setError('');
+        setSuccess('');
     };
 
     return (
@@ -74,6 +116,7 @@ const UserManagement = () => {
                                     <th className="px-6 py-4">Username</th>
                                     <th className="px-6 py-4">Email</th>
                                     <th className="px-6 py-4">Role</th>
+                                    <th className="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -96,6 +139,14 @@ const UserManagement = () => {
                                                 </span>
                                             )}
                                         </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button onClick={() => handleEditClick(user)} className="p-1.5 text-slate-400 hover:text-indigo-400 transition-colors bg-slate-800 rounded-md border border-slate-700/50 mr-2">
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                            <button onClick={() => handleDeleteUser(user.id)} className="p-1.5 text-slate-400 hover:text-red-400 transition-colors bg-slate-800 rounded-md border border-slate-700/50">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -105,12 +156,18 @@ const UserManagement = () => {
 
                 {/* Create User Form */}
                 <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl h-fit">
-                    <div className="p-5 border-b border-slate-700/50 bg-slate-800/80">
+                    <div className="p-5 border-b border-slate-700/50 bg-slate-800/80 flex justify-between items-center">
                         <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                            <UserPlus className="w-5 h-5" /> Add Superuser
+                            {editingUserId ? <Edit2 className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />} 
+                            {editingUserId ? 'Edit User' : 'Add Superuser'}
                         </h2>
+                        {editingUserId && (
+                            <button onClick={cancelEdit} className="p-1 text-slate-400 hover:text-white transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        )}
                     </div>
-                    <form onSubmit={handleCreateUser} className="p-6 space-y-4">
+                    <form onSubmit={handleSubmit} className="p-6 space-y-4">
                         {error && <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-sm">{error}</div>}
                         {success && <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-lg text-sm">{success}</div>}
                         
@@ -137,14 +194,15 @@ const UserManagement = () => {
                             <label className="block text-sm font-medium text-slate-300 mb-1">Password</label>
                             <input 
                                 type="password" 
-                                required
+                                required={!editingUserId}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                placeholder={editingUserId ? "Leave blank to keep current password" : ""}
                                 className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
                             />
                         </div>
                         <button type="submit" className="w-full mt-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
-                            Provision Superuser
+                            {editingUserId ? 'Update User' : 'Provision Superuser'}
                         </button>
                     </form>
                 </div>
